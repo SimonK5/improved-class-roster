@@ -1,8 +1,6 @@
 'use client'
 
 import { TextField, Stack, Autocomplete } from "@mui/material";
-import { Box } from "@mui/system";
-import { useEffect, useState } from "react";
 
 type Props = {
   list: string[]
@@ -12,7 +10,6 @@ type Props = {
 
 
 export function LiveSearch({ list, label, onChange }: Props){
-  const [input, setInput] = useState('');
   return (
     <div>
       <Stack sx={{ width: 300, margin: 'auto' }}>
