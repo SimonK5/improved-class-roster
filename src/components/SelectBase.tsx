@@ -22,7 +22,7 @@ export function SelectBase(){
         <option value="">Please select</option>
         {
           subjects.map((subject, index) => {
-            return <option value={subject} key={index}>{subject}</option>
+            return <option value={subject} key={subject}>{subject}</option>
           })
         }
       </select>
