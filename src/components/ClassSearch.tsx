@@ -2,7 +2,7 @@
 import { LiveSearch } from "./LiveSearch";
 import OptionToggle from "./OptionToggle";
 import { useState } from "react";
-import { Stack, Button } from "@mui/material";
+import { Stack, Button, Tooltip } from "@mui/material";
 import { getSearchClassResults } from "@/api/rosterapi";
 
 type Props = {
@@ -33,6 +33,8 @@ export default function ClassSearch({ semesters, subjects }: Props){
 
     setSearchResults(res);
   }
+  const searchDisabled = !semester || !subject;
+
   return (
     <div>
       <LiveSearch list={semesters.reverse()} label="Semester" onChange={(e: any, val: string) => setSemester(val)} multiple={false} />
@@ -42,9 +44,16 @@ export default function ClassSearch({ semesters, subjects }: Props){
         justifyContent="center"
         alignItems="center"
         >
-        <OptionToggle options={['M', 'T', 'W', 'R', 'F', 'S', 'Su']} onChange={(e: any, val: string[]) => setDays(val)}/>
-        <OptionToggle  options={['1000', '2000', '3000', '4000', '5000']} onChange={(e: any, val: string[]) => setLevels(val)}/>
-        <Button onClick={search} variant="outlined" className="content-center">Search</Button>
+        <OptionToggle options={['M', 'T', 'W', 'R', 'F', 'S', 'Su']} onChange={(e: any, val: string[]) => setDays(val)} exclusive={false}/>
+        <OptionToggle  options={['1000', '2000', '3000', '4000', '5000']} onChange={(e: any, val: string[]) => setLevels(val)} exclusive={false}/>
+        <Tooltip title="Empty Semester and/or Subject" disableHoverListener={!searchDisabled}>
+          <span>
+            <Button disabled={searchDisabled} onClick={search} variant="outlined" className="content-center" style={searchDisabled ? { pointerEvents: 'none' } : {}}>
+              Search
+            </Button>
+          </span>
+        </Tooltip>
+        
       </Stack>
       {
         searchResults?.classes ? searchResults.classes.map((course: any) => (

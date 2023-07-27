@@ -4,10 +4,11 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { Box } from '@mui/material';
 type Props = {
     options: string[],
-    onChange: Function
+    onChange: Function,
+    exclusive: boolean
 }
 
-export default function OptionToggle({ options, onChange }: Props){
+export default function OptionToggle({ options, onChange, exclusive }: Props){
     const [levels, setLevels] = React.useState<string[]>(() => []);
     let optionComponents = [];
 
@@ -25,7 +26,8 @@ export default function OptionToggle({ options, onChange }: Props){
         </ToggleButton>);
     }
     return (
-        <ToggleButtonGroup  
+        <ToggleButtonGroup
+            exclusive={exclusive}
             className="class-search"
             size="small"
             value={levels}
