@@ -13,6 +13,52 @@ function getTextBetweenParentheses(text: string) {
     }
 }
 
+function filterByDay(jsonData: any, targetPattern: string) {
+    const filteredData = jsonData.classes.map((cls: any) => {
+      const filteredEnrollGroups = cls.enrollGroups
+        .map((enrollGroup: any) => {
+          const filteredClassSections = enrollGroup.classSections
+            .map((classSection: any) => {
+              const filteredMeetings = classSection.meetings.filter((meeting: any) => {
+                return meeting.pattern === targetPattern;
+              });
+  
+              return filteredMeetings.length > 0
+                ? { ...classSection, meetings: filteredMeetings }
+                : null;
+            })
+            .filter(Boolean);
+  
+          return filteredClassSections.length > 0
+            ? { ...enrollGroup, classSections: filteredClassSections }
+            : null;
+        })
+        .filter(Boolean);
+  
+      return filteredEnrollGroups.length > 0
+        ? { ...cls, enrollGroups: filteredEnrollGroups }
+        : null;
+    }).filter(Boolean);
+  
+    return filteredData;
+  }
+
+  function convertDaysOfWeek(daysArray: string[]) {
+    const daysOfWeek = ['M', 'T', 'W', 'R', 'F', 'S', 'Su'];
+  
+    // Sort the daysArray based on their position in daysOfWeek
+    const sortedDaysArray = daysArray.sort((a, b) => {
+      return daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b);
+    });
+  
+    // Join the sorted elements into a string
+    const resultString = sortedDaysArray.join('');
+  
+    return resultString;
+  }
+  
+  
+
 /**
  * 
  * @param keyword The name of the variable (ex: roster, subject, classLevels[])
@@ -56,10 +102,12 @@ export async function getSearchClassResults(input: ClassSearchQuery){
     url = url.concat(`subject=${getTextBetweenParentheses(input.subject)}&`);
     url = url.concat(createURLSegment('classLevels[]', input.classLevels));
     url = url.concat('days-type=all&')
-    url = url.concat(createURLSegment('days', input.days))
     console.log("url", url)
 
     const res = await fetch(url);
     const json = await res.json();
+    if(input.days.length > 0){
+      json.data.classes = filterByDay(json.data, convertDaysOfWeek(input.days));
+    }
     return json.data;
 }
