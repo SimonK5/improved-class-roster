@@ -1,6 +1,6 @@
 export type ClassSearchQuery = {
     semester: string,
-    subjects: string[],
+    subject: string,
     classLevels: string[],
     days: string[],
 }

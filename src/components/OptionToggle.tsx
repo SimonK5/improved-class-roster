@@ -8,7 +8,7 @@ type Props = {
 }
 
 export default function OptionToggle({ options, onChange }: Props){
-    const [levels, setLevels] = React.useState(() => ['']);
+    const [levels, setLevels] = React.useState<string[]>(() => []);
     let optionComponents = [];
 
     const handleChange = (
