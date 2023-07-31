@@ -1,11 +1,11 @@
 import { ClassSearchQuery } from "@/types";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import db from '../../firebase/clientApp';
 
 
 const URL = 'https://classes.cornell.edu/api/2.0'
 
-function getTextBetweenParentheses(text: string) {
+export function getTextBetweenParentheses(text: string) {
     let regExp = /\(([^)]+)\)/;
     let matches = regExp.exec(text);
     if(matches) {
@@ -17,7 +17,7 @@ function getTextBetweenParentheses(text: string) {
 }
 
 function filterByDay(jsonData: any, targetPattern: string) {
-    const filteredData = jsonData.classes.map((cls: any) => {
+    const filteredData = jsonData.map((cls: any) => {
       const filteredEnrollGroups = cls.enrollGroups
         .map((enrollGroup: any) => {
           const filteredClassSections = enrollGroup.classSections
@@ -96,36 +96,52 @@ export async function getSubjects() {
     return json.data.subjects;
 }
 
-/**
- * @returns A list of JSON objects representing search results.
- */
 export async function getSearchClassResults(input: ClassSearchQuery){
-    let url = `${URL}/search/classes.json?`;
-    url = url.concat(`roster=${input.semester}&`);
-    url = url.concat(`subject=${getTextBetweenParentheses(input.subject)}&`);
-    url = url.concat(createURLSegment('classLevels[]', input.classLevels));
-    url = url.concat('days-type=all&')
-    console.log("url", url)
+  const classesRef = collection(db, "roster");
+  let q: any = classesRef;
 
-    const res = await fetch(url);
-    const json = await res.json();
-    if(input.days.length > 0){
-      json.data.classes = filterByDay(json.data, convertDaysOfWeek(input.days));
-    }
-    return json.data;
+  console.log(input.subject)
+  if(input.subject){
+    q = query(q, where("subject", "==", `${input.subject}`))
+  }
+  
+  const snapshot = await getDocs(q)
+  let res: any[] = []
+  snapshot.forEach((doc) => {
+    res.push(doc.data());
+  });
+  if(input.classLevels?.length > 0){
+    res = res.filter((item) => input.classLevels.includes((Math.floor(parseInt(item.catalogNbr) / 1000) * 1000).toString()))
+  }
+  if(input.days?.length > 0){
+    res = filterByDay(res, convertDaysOfWeek(input.days))
+  }
+
+  console.log(res)
+
+  return res;
+}
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export const storeData = async () => {
-  const data = {
-    name: "poop"
-  }
-  console.log("querying")
-  console.log(db)
+  const subjects = await getSubjects();
+  const classes: any[] = [];
 
-  await setDoc(doc(db, "cities", "NY"), {
-    name: "New York",
-    state: "NY",
-    country: "USA"
-  });
-  console.log("done")
+  for(let i = 0; i < subjects.length; i++){
+    await delay(1200);
+    console.log("querying", subjects[i].value);
+    console.log("progress", `${100 * i / subjects.length}%`);
+    const res = await fetch(`${URL}/search/classes.json?roster=FA23&subject=${subjects[i].value}`)
+    const json = await res.json();
+    for(let i = 0; i < json.data.classes.length; i++){
+      classes.push(json.data.classes[i]);
+    }
+  }
+  console.log("done querying class roster, storing into firebase");
+  for(let i = 0; i < classes.length; i++){
+    await setDoc(doc(db, "roster", `${classes[i].subject} ${classes[i].catalogNbr}`), classes[i], {"merge": true});
+  }
 }

@@ -3,7 +3,7 @@ import { LiveSearch } from "./LiveSearch";
 import OptionToggle from "./OptionToggle";
 import { useState } from "react";
 import { Stack, Button, Tooltip } from "@mui/material";
-import { getSearchClassResults, storeData } from "@/api/rosterapi";
+import { getSearchClassResults, storeData, getTextBetweenParentheses } from "@/api/rosterapi";
 
 type Props = {
   semesters: string[]
@@ -20,6 +20,7 @@ export default function ClassSearch({ semesters, subjects }: Props){
   const [levels, setLevels] = useState<string[]>([]);
   const [days, setDays] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<any>({});
+  console.log(searchResults)
 
   const searchScraper = async () => {
     console.log("web scraped result")
@@ -41,7 +42,7 @@ export default function ClassSearch({ semesters, subjects }: Props){
   return (
     <div>
       <LiveSearch list={semesters.reverse()} label="Semester" onChange={(e: any, val: string) => setSemester(val)} multiple={false} />
-      <LiveSearch list={subjects} label="Subjects" onChange={(e: any, val: string) => setSubject(val)} multiple={false} />
+      <LiveSearch list={subjects} label="Subjects" onChange={(e: any, val: string) => setSubject(getTextBetweenParentheses(val))} multiple={false} />
       <Stack
         display="flex"
         justifyContent="center"
@@ -56,13 +57,12 @@ export default function ClassSearch({ semesters, subjects }: Props){
             </Button>
           </span>
         </Tooltip>
-        <Button onClick={searchScraper}>Scrape</Button>
-        <button onClick={storeData}>poop</button>
+        {/* <button onClick={storeData}>poop</button> */}
 
         
       </Stack>
       {
-        searchResults?.classes ? searchResults.classes.map((course: any) => (
+        searchResults.keys ? searchResults.map((course: any) => (
           <p key={course.catalogNbr}>{course.titleLong}</p>
         )) : ""
       }
