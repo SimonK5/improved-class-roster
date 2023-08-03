@@ -20,7 +20,9 @@ export default function ClassSearch({ semesters, subjects }: Props){
   const [levels, setLevels] = useState<string[]>([]);
   const [days, setDays] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<any>({});
+  const [res, setRes] = useState<any>({});
   console.log(searchResults)
+
 
   const searchScraper = async () => {
     console.log("web scraped result")
@@ -37,6 +39,7 @@ export default function ClassSearch({ semesters, subjects }: Props){
 
     setSearchResults(res);
   }
+
   const searchDisabled = !semester || !subject;
 
   return (
@@ -57,7 +60,6 @@ export default function ClassSearch({ semesters, subjects }: Props){
             </Button>
           </span>
         </Tooltip>
-        {/* <button onClick={storeData}>poop</button> */}
 
         
       </Stack>
@@ -66,6 +68,11 @@ export default function ClassSearch({ semesters, subjects }: Props){
           <p key={course.catalogNbr}>{course.titleLong}</p>
         )) : ""
       }
+      <ul className="my-auto">
+        {res?.map((country: any) => (
+          <li key={country.id}>{country.name}</li>
+        ))}
+      </ul>
     </div>
   )
   

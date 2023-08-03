@@ -2,7 +2,6 @@ import { ClassSearchQuery } from "@/types";
 import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import db from '../../firebase/clientApp';
 
-
 const URL = 'https://classes.cornell.edu/api/2.0'
 
 export function getTextBetweenParentheses(text: string) {
